@@ -58,7 +58,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	if err != nil {
 		return nil, err
 	}
-	err1 := stub.PutState("User", userJson)
+	err1 := stub.PutState(args[0], userJson)
 	if err1 != nil {
 		return nil, err1
 	}
@@ -87,7 +87,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	// Handle different functions
 	if function == "read" { //read a variable
-		return t.read(stub)
+		return t.read(stub, args[0])
 	}
 	fmt.Println("query did not find func: " + function)
 
@@ -104,7 +104,7 @@ func (t *SimpleChaincode) updateDate(stub shim.ChaincodeStubInterface, args []st
 	userName := args[0]
 	date := args[1]
 
-	userArray, _ := t.unpack(stub)
+	userArray, _ := t.unpack(stub, userName)
 
 	for i, value := range userArray {
 		if value.UserName == userName {
@@ -112,8 +112,12 @@ func (t *SimpleChaincode) updateDate(stub shim.ChaincodeStubInterface, args []st
 		}
 		userArray[i] = value
 	}
+	val, err := t.repack(stub, userArray)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	return val, nil
 }
 func (t *SimpleChaincode) repack(stub shim.ChaincodeStubInterface, userArray []User) ([]byte, error) {
 
@@ -132,8 +136,8 @@ func (t *SimpleChaincode) repack(stub shim.ChaincodeStubInterface, userArray []U
 }
 
 //Read from the stub and return the user array
-func (t *SimpleChaincode) unpack(stub shim.ChaincodeStubInterface) ([]User, error) {
-	valuAsBytes, err := stub.GetState("User")
+func (t *SimpleChaincode) unpack(stub shim.ChaincodeStubInterface, userName string) ([]User, error) {
+	valuAsBytes, err := stub.GetState(userName)
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +150,9 @@ func (t *SimpleChaincode) unpack(stub shim.ChaincodeStubInterface) ([]User, erro
 }
 
 // read - query function to read key/value pair
-func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, userName string) ([]byte, error) {
 
-	valAsbytes, err := stub.GetState("User")
+	valAsbytes, err := stub.GetState(userName)
 	if err != nil {
 
 		return nil, err
