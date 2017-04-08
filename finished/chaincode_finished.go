@@ -28,14 +28,17 @@ import (
 type SimpleChaincode struct {
 }
 
-type UserDetails struct {
-	FirstName string
-	LastName  string
-	Date      string
+type Consignment struct {
+	PackageID string `json: "packageID"`
+	PackageType  string `json: "packageType"`
+	BookedOn string `json: "bookedOn"`
+	From string `json: "from"`
+	To string `json: "to"`
+	FlightNumber string `json: "flightNumber"`
+	date string `json: "date"`
 }
-type User struct {
-	UserName string
-	Details  UserDetails
+type packageID_holder struct {
+	packageIDs []string `json: "packageIDs"`
 }
 
 func main() {
@@ -50,18 +53,11 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	if len(args) != 3 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
-	Users := make([]User, 0)
-	details := UserDetails{FirstName: args[1], LastName: args[2], Date: ""}
-	user := User{UserName: args[0], Details: details}
-	Users = append(Users, user)
-	userJson, err := json.Marshal(Users)
-	if err != nil {
-		return nil, err
-	}
-	err1 := stub.PutState(args[0], userJson)
-	if err1 != nil {
-		return nil, err1
-	}
+	var packageIDs packageID_holder
+	bytes, err := json.Marshal(&packageIDs)
+	if err != nil { return nil, errors.New("Error creating package id record") }
+
+	err = stub.PutState("packageIDs", bytes)
 
 	return nil, nil
 }
@@ -73,12 +69,53 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	// Handle different functions
 	if function == "init" {
 		return t.Init(stub, "init", args)
-	} else if function == "write" {
+	} else if function == "createpackage" {
 		return t.updateDate(stub, args)
 	}
 	fmt.Println("invoke did not find func: " + function)
 
 	return nil, errors.New("Received unknown function invocation: " + function)
+}
+func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args []string) ([]byte, error){
+	var c Consignment
+	packageId := "\"packageID\":\""+args[0]+"\", "
+	packageType := "\"packageType\":\""+args[1]+"\", "
+	bookedOn := "\"bookedOn\":\""+args[2]+"\", "
+	from := "\"from\":\""+args[3]+"\", "
+	to := "\"to\":\""+args[4]+"\", "
+	flightNumber := "\"flightNumber\":\"" "\", "
+	date := "\"date\":\"" "\", "
+	packageJson := "{"+packageId+packageType+bookedOn+from+to+flightNumber+date+packageJson+"}"
+
+	err := json.Unmarshal([]byte(packageJson), &c)
+	_, err = t.save_changes(stub, c)
+
+	bytes, err := stub.GetState("packageIDs")
+
+	var packageIDs packageID_holder
+
+	err = json.Unmarshal(bytes, &packageIDs)
+
+	packageIDs.packageIDs = append(packageIDs.packageIDs, packageId)
+
+	bytes, err = json.Marshal(packageIDs)
+
+	err = stub.PutState("packageIDs",bytes)
+
+	return nil, nil
+
+}
+func (t *SimpleChaincode) save_changes(stub shim.ChaincodeStubInterface, c Consignment) (bool, error) {
+
+	bytes, err := json.Marshal(c)
+
+	if err != nil { fmt.Printf("SAVE_CHANGES: Error converting vehicle record: %s", err); return false, errors.New("Error converting vehicle record") }
+
+	err = stub.PutState(v.packageId, bytes)
+
+	if err != nil { fmt.Printf("SAVE_CHANGES: Error storing vehicle record: %s", err); return false, errors.New("Error storing vehicle record") }
+
+	return true, nil
 }
 
 // Query is our entry point for queries
@@ -87,13 +124,79 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	// Handle different functions
 	if function == "read" { //read a variable
-		return t.read(stub, args[0])
+		return t.get_packages(stub)
 	}
 	fmt.Println("query did not find func: " + function)
 
 	return nil, errors.New("Received unknown function query: " + function)
 }
 
+}
+
+//=================================================================================================================================
+//	 get_vehicles
+//=================================================================================================================================
+
+func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	bytes, err := stub.GetState("packageIDs")
+
+																			if err != nil { return nil, errors.New("Unable to get v5cIDs") }
+
+	var packageIDs packageID_holder
+
+	err = json.Unmarshal(bytes, &packageIDs)
+
+																			if err != nil {	return nil, errors.New("Corrupt V5C_Holder") }
+
+	result := "["
+
+	var temp []byte
+	var c Consignment
+
+	for _, packageID := range packageIDs.packageIDs {
+
+		v, err = t.retrieve_id(stub, packageID)
+
+		if err != nil {return nil, errors.New("Failed to retrieve V5C")}
+		temp, err = t.get_package_details(stub, c)
+
+		if err == nil {
+			result += string(temp) + ","
+		}
+	}
+
+	if len(result) == 1 {
+		result = "[]"
+	} else {
+		result = result[:len(result)-1] + "]"
+	}
+
+	return []byte(result), nil
+}
+func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, c Consignment) ([]byte, error) {
+
+	bytes, err := json.Marshal(c)
+
+if err != nil { return nil, errors.New("GET_VEHICLE_DETAILS: Invalid vehicle object") }
+return bytes, nil
+
+}
+
+
+func (t *SimpleChaincode) retrieve_id(stub shim.ChaincodeStubInterface, packageID string) (Consignment, error) {
+
+	var c Consignment
+
+	bytes, err := stub.GetState(packageID);
+
+	if err != nil {	fmt.Printf("RETRIEVE_V5C: Failed to invoke vehicle_code: %s", err); return v, errors.New("RETRIEVE_V5C: Error retrieving vehicle with v5cID = " + v5cID) }
+
+	err = json.Unmarshal(bytes, &c);
+
+    if err != nil {	fmt.Printf("RETRIEVE_V5C: Corrupt vehicle record "+string(bytes)+": %s", err); return v, errors.New("RETRIEVE_V5C: Corrupt vehicle record"+string(bytes))	}
+
+	return v, nil
+}
 // write - invoke function to write key/value pair
 func (t *SimpleChaincode) updateDate(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("running write()")
