@@ -83,8 +83,8 @@ func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args [
 	bookedOn := "\"bookedOn\":\""+args[2]+"\", "
 	from := "\"from\":\""+args[3]+"\", "
 	to := "\"to\":\""+args[4]+"\", "
-	flightNumber := "\"flightNumber\":\"" "\", "
-	date := "\"date\":\"" "\", "
+	flightNumber := "\"flightNumber\":\"\", "
+	date := "\"date\":\"\", "
 	packageJson := "{"+packageId+packageType+bookedOn+from+to+flightNumber+date+packageJson+"}"
 
 	err := json.Unmarshal([]byte(packageJson), &c)
@@ -130,8 +130,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	return nil, errors.New("Received unknown function query: " + function)
 }
-
-}
+//user_type1_0 18e23bffec
+//user_type1_3 ba7469144a
+//user_type1_4 427c6df636
 
 //=================================================================================================================================
 //	 get_vehicles
