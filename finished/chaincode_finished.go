@@ -50,12 +50,12 @@ func main() {
 
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 1")
-	}
+	// if len(args) != 3 {
+	// 	return nil, errors.New("Incorrect number of arguments. Expecting 1")
+	// }
 	var packageIDs packageID_holder
 	bytes, err := json.Marshal(&packageIDs)
-	if err != nil { return nil, errors.New("Error creating package id record") }
+	//if err != nil { return nil, errors.New("Error creating package id record") }
 
 	err = stub.PutState("packageIDs", bytes)
 
