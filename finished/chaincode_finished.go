@@ -40,7 +40,7 @@ type Consignment struct {
 	Date         string `json: "date"`
 }
 type packageID_holder struct {
-	packageIDs []string `json: "packageIDs"`
+	PackageIDs []string `json: "PackageIDs"`
 }
 
 func main() {
@@ -55,13 +55,13 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	// if len(args) != 3 {
 	// 	return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	// }
-	var packageIDs packageID_holder
-	bytes, err := json.Marshal(&packageIDs)
+	var PackageIDs packageID_holder
+	bytes, err := json.Marshal(&PackageIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState("packageIDs", bytes)
+	err = stub.PutState("PackageIDs", bytes)
 
 	return nil, nil
 }
@@ -103,26 +103,26 @@ func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args [
 		return nil, err
 	}
 
-	bytes, error := stub.GetState("packageIDs")
+	bytes, error := stub.GetState("PackageIDs")
 	if error != nil {
 		return nil, error
 	}
 
-	var packageIDs packageID_holder
+	var PackageIDs packageID_holder
 
-	err = json.Unmarshal(bytes, &packageIDs)
+	err = json.Unmarshal(bytes, &PackageIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	packageIDs.packageIDs = append(packageIDs.packageIDs, args[0])
+	PackageIDs.PackageIDs = append(PackageIDs.PackageIDs, args[0])
 
-	bytes, err = json.Marshal(packageIDs)
+	bytes, err = json.Marshal(PackageIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState("packageIDs", bytes)
+	err = stub.PutState("PackageIDs", bytes)
 
 	return nil, nil
 
@@ -169,16 +169,17 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte, error) {
 	logger.Debug("get_packages1: ")
-	bytes, err := stub.GetState("packageIDs")
+	bytes, err := stub.GetState("PackageIDs")
 	logger.Debug("get_packages1: ", bytes)
 	if err != nil {
 		return nil, errors.New("Unable to get v5cIDs")
 	}
 	fmt.Println("Inside read package1", bytes)
-	fmt.Println("Inside read package1" + string(bytes))
-	var packageIDs packageID_holder
+	fmt.Println("Inside read package1", string(bytes))
+	var PackageIDs packageID_holder
 
-	err = json.Unmarshal(bytes, &packageIDs)
+	err = json.Unmarshal(bytes, &PackageIDs)
+	fmt.Println("Unmarsh get package", PackageIDs.PackageIDs)
 
 	if err != nil {
 		return nil, errors.New("Corrupt V5C_Holder")
@@ -188,9 +189,9 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 
 	var temp []byte
 	var c Consignment
-	fmt.Println("package id is ", packageIDs.packageIDs)
+	fmt.Println("package id is ", PackageIDs.PackageIDs)
 
-	for _, packageID := range packageIDs.packageIDs {
+	for _, packageID := range PackageIDs.PackageIDs {
 		fmt.Println("inside for loop")
 		fmt.Println("Current package id is", packageID)
 		c, err = t.retrieve_id(stub, packageID)
