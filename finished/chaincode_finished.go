@@ -200,7 +200,7 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 	}
 
 	if len(result) == 1 {
-		result = bytes
+		result = string(bytes)
 	} else {
 		result = result[:len(result)-1] + "]"
 	}
