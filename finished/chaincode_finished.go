@@ -28,6 +28,8 @@ import (
 type SimpleChaincode struct {
 }
 
+var logger = shim.NewLogger("CLDChaincode")
+
 type Consignment struct {
 	PackageID    string `json: "packageID"`
 	PackageType  string `json: "packageType"`
@@ -147,7 +149,7 @@ func (t *SimpleChaincode) save_changes(stub shim.ChaincodeStubInterface, c Consi
 // Query is our entry point for queries
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("query is running " + function)
-
+	logger.Debug("query function: ", function)
 	// Handle different functions
 	if function == "read" { //read a variable
 		return t.get_packages(stub)
@@ -166,8 +168,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 //=================================================================================================================================
 
 func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	logger.Debug("get_packages1: ")
 	bytes, err := stub.GetState("packageIDs")
-
+	logger.Debug("get_packages1: ", bytes)
 	if err != nil {
 		return nil, errors.New("Unable to get v5cIDs")
 	}
@@ -188,6 +191,7 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 	for _, packageID := range packageIDs.packageIDs {
 
 		c, err = t.retrieve_id(stub, packageID)
+		logger.Debug("inside loop function: ", packageID)
 
 		if err != nil {
 			return nil, errors.New("Failed to retrieve V5C")
@@ -202,13 +206,14 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 	if len(result) == 1 {
 		result = string(bytes)
 	} else {
+		logger.Debug("inside else function: ", result)
 		result = result[:len(result)-1] + "]"
 	}
 	//return bytes, nil
 	return []byte(result), nil
 }
 func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, c Consignment) ([]byte, error) {
-
+	logger.Debug("get_package_details function: ", c)
 	bytes, err := json.Marshal(c)
 
 	if err != nil {
@@ -219,7 +224,7 @@ func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, 
 }
 
 func (t *SimpleChaincode) retrieve_id(stub shim.ChaincodeStubInterface, packageID string) (Consignment, error) {
-
+	logger.Debug("retrieve_id function: ", packageID)
 	var c Consignment
 
 	bytes, err := stub.GetState(packageID)
