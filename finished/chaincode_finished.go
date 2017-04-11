@@ -94,6 +94,8 @@ func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("Inside create package")
 	_, err = t.save_changes(stub, c)
 	if err != nil {
 		return nil, err
@@ -111,7 +113,7 @@ func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args [
 		return nil, err
 	}
 
-	packageIDs.packageIDs = append(packageIDs.packageIDs, packageId)
+	packageIDs.packageIDs = append(packageIDs.packageIDs, args[0])
 
 	bytes, err = json.Marshal(packageIDs)
 	if err != nil {
@@ -169,7 +171,7 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 	if err != nil {
 		return nil, errors.New("Unable to get v5cIDs")
 	}
-
+	fmt.Println("Inside read package1")
 	var packageIDs packageID_holder
 
 	err = json.Unmarshal(bytes, &packageIDs)
