@@ -174,7 +174,8 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 	if err != nil {
 		return nil, errors.New("Unable to get v5cIDs")
 	}
-	fmt.Println("Inside read package1")
+	fmt.Println("Inside read package1", bytes)
+	fmt.Println("Inside read package1" + string(bytes))
 	var packageIDs packageID_holder
 
 	err = json.Unmarshal(bytes, &packageIDs)
@@ -187,9 +188,11 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 
 	var temp []byte
 	var c Consignment
+	fmt.Println("package id is ", packageIDs.packageIDs)
 
 	for _, packageID := range packageIDs.packageIDs {
-
+		fmt.Println("inside for loop")
+		fmt.Println("Current package id is", packageID)
 		c, err = t.retrieve_id(stub, packageID)
 		logger.Debug("inside loop function: ", packageID)
 
@@ -205,17 +208,20 @@ func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte
 
 	if len(result) == 1 {
 		result = string(bytes)
+		fmt.Println("Inside if", result)
 	} else {
 		logger.Debug("inside else function: ", result)
 		result = result[:len(result)-1] + "]"
+		fmt.Println("Inside else", result)
 	}
 	//return bytes, nil
 	return []byte(result), nil
 }
 func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, c Consignment) ([]byte, error) {
 	logger.Debug("get_package_details function: ", c)
+	fmt.Println("Inside get_package_details", c)
 	bytes, err := json.Marshal(c)
-
+	fmt.Println("Inside get_package_details", bytes)
 	if err != nil {
 		return nil, errors.New("GET_VEHICLE_DETAILS: Invalid vehicle object")
 	}
@@ -224,7 +230,7 @@ func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, 
 }
 
 func (t *SimpleChaincode) retrieve_id(stub shim.ChaincodeStubInterface, packageID string) (Consignment, error) {
-	logger.Debug("retrieve_id function: ", packageID)
+	fmt.Println("retrieve_id function: ", packageID)
 	var c Consignment
 
 	bytes, err := stub.GetState(packageID)
