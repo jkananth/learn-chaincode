@@ -35,7 +35,7 @@ type Consignment struct {
 	From         string `json: "from"`
 	To           string `json: "to"`
 	FlightNumber string `json: "flightNumber"`
-	date         string `json: "date"`
+	Date         string `json: "date"`
 }
 type packageID_holder struct {
 	packageIDs []string `json: "packageIDs"`
@@ -86,7 +86,7 @@ func (t *SimpleChaincode) CreatePackage(stub shim.ChaincodeStubInterface, args [
 	from := "\"from\":\"" + args[3] + "\", "
 	to := "\"to\":\"" + args[4] + "\", "
 	flightNumber := "\"flightNumber\":\"\", "
-	date := "\"date\":\"\", "
+	date := "\"date\":\"\" "
 	packageJson := "{" + packageId + packageType + bookedOn + from + to + flightNumber + date + "}"
 
 	err := json.Unmarshal([]byte(packageJson), &c)
