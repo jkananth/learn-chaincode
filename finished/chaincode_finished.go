@@ -168,44 +168,44 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 func (t *SimpleChaincode) get_packages(stub shim.ChaincodeStubInterface) ([]byte, error) {
 	bytes, err := stub.GetState("packageIDs")
 
-	// if err != nil {
-	// 	return nil, errors.New("Unable to get v5cIDs")
-	// }
-	// fmt.Println("Inside read package1")
-	// var packageIDs packageID_holder
-	//
-	// err = json.Unmarshal(bytes, &packageIDs)
-	//
-	// if err != nil {
-	// 	return nil, errors.New("Corrupt V5C_Holder")
-	// }
-	//
-	// result := "["
-	//
-	// var temp []byte
-	// var c Consignment
-	//
-	// for _, packageID := range packageIDs.packageIDs {
-	//
-	// 	c, err = t.retrieve_id(stub, packageID)
-	//
-	// 	if err != nil {
-	// 		return nil, errors.New("Failed to retrieve V5C")
-	// 	}
-	// 	temp, err = t.get_package_details(stub, c)
-	//
-	// 	if err == nil {
-	// 		result += string(temp) + ","
-	// 	}
-	// }
-	//
-	// if len(result) == 1 {
-	// 	result = "[]"
-	// } else {
-	// 	result = result[:len(result)-1] + "]"
-	// }
-	return bytes, nil
-	//return []byte(result), nil
+	if err != nil {
+		return nil, errors.New("Unable to get v5cIDs")
+	}
+	fmt.Println("Inside read package1")
+	var packageIDs packageID_holder
+
+	err = json.Unmarshal(bytes, &packageIDs)
+
+	if err != nil {
+		return nil, errors.New("Corrupt V5C_Holder")
+	}
+
+	result := "["
+
+	var temp []byte
+	var c Consignment
+
+	for _, packageID := range packageIDs.packageIDs {
+
+		c, err = t.retrieve_id(stub, packageID)
+
+		if err != nil {
+			return nil, errors.New("Failed to retrieve V5C")
+		}
+		temp, err = t.get_package_details(stub, c)
+
+		if err == nil {
+			result += string(temp) + ","
+		}
+	}
+
+	if len(result) == 1 {
+		result = bytes
+	} else {
+		result = result[:len(result)-1] + "]"
+	}
+	//return bytes, nil
+	return []byte(result), nil
 }
 func (t *SimpleChaincode) get_package_details(stub shim.ChaincodeStubInterface, c Consignment) ([]byte, error) {
 
